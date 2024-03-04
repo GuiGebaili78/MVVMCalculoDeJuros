@@ -11,6 +11,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,13 +29,15 @@ import br.com.fiap.calculodejuros.components.CaixaDeEntrada
 import br.com.fiap.calculodejuros.components.CardResultado
 
 @Composable
-fun JurosScreen() {
+fun JurosScreen(jurosScreenViewModel: JurosScreenViewModel) {
 
-    var capital by remember { mutableStateOf("") }
-    var taxa by remember { mutableStateOf("") }
-    var tempo by remember { mutableStateOf("") }
-    var juros by remember { mutableStateOf(0.0) }
-    var montante by remember { mutableStateOf(0.0) }
+    // var capital by remember { mutableStateOf("") }
+    val capital by jurosScreenViewModel.capital.observeAsState(initial = "")
+    val taxa by jurosScreenViewModel.taxa.observeAsState(initial = "")
+    val tempo by jurosScreenViewModel.tempo.observeAsState(initial = "")
+    val juros by jurosScreenViewModel.juros.observeAsState(initial = 0.0)
+    val montante by jurosScreenViewModel.montante.observeAsState(initial = 0.0)
+
 
     Box(
         modifier = Modifier.padding(16.dp),
@@ -73,7 +76,7 @@ fun JurosScreen() {
                             .padding(16.dp),
                         keyboardType = KeyboardType.Number,
                         atualizarValor = {
-                            capital = it
+                            jurosScreenViewModel.onCapitalChanged(it)
                         }
                     )
                     CaixaDeEntrada(
@@ -85,7 +88,7 @@ fun JurosScreen() {
                             .padding(16.dp),
                         keyboardType = KeyboardType.Number,
                         atualizarValor = {
-                            taxa = it
+                            jurosScreenViewModel.onTaxaChanged(it)
                         }
                     )
                     CaixaDeEntrada(
@@ -97,21 +100,15 @@ fun JurosScreen() {
                             .padding(16.dp),
                         keyboardType = KeyboardType.Number,
                         atualizarValor = {
-                            tempo = it
+                            jurosScreenViewModel.onTempoChanged(it)
                         }
                     )
 
                     Button(
                         onClick = {
-                            juros = calcularJuros(
-                                capital = capital.toDouble(),
-                                taxa = taxa.toDouble(),
-                                tempo = tempo.toDouble()
-                            )
-                            montante = calcularMontante(
-                                capital = capital.toDouble(),
-                                juros = juros
-                            )
+                            jurosScreenViewModel.calcularJurosViewModel()
+                            jurosScreenViewModel.calcularMontanteViewModel()
+
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -124,7 +121,7 @@ fun JurosScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             // Resultado da aplicação
 
-            CardResultado(juros = juros, montante = montante )
+            CardResultado(juros = juros, montante = montante)
 
         }
     }
